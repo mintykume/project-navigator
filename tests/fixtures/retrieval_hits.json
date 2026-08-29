@@ -1,0 +1,24 @@
+{
+  "hits": [
+    {
+      "query_id": "q1",
+      "title": "Awesome ETL",
+      "url": "https://github.com/org/awesome-etl",
+      "snippet": "A mature open-source ETL toolkit for batch pipelines.",
+      "source_class": "github_repo"
+    },
+    {
+      "query_id": "q1",
+      "title": "Awesome ETL mirror",
+      "url": "https://github.com/org/awesome-etl/",
+      "snippet": "Duplicate URL with trailing slash should dedupe.",
+      "source_class": "github_repo"
+    },
+    {
+      "query_id": "q3",
+      "title": "Survey paper on pipeline lineage",
+      "url": "https://arxiv.org/abs/0000.00000",
+      "snippet": "Reviews lineage systems and open problems in data engineering."
+    }
+  ]
+}

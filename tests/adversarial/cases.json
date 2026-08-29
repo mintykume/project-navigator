@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "description": "Adversarial Project Navigator cases. Gate fields are asserted by tests; preferred_actions guide rational S8 behavior.",
+  "cases": [
+    {
+      "id": "generic-todo-app",
+      "category": "generic_project_idea",
+      "profile": "profiles/beginner.md",
+      "question": "Give me a project idea. Should I build a todo app with AI features?",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "offer_quick_vs_deep",
+        "run_s4_now": false,
+        "preferred_actions": ["study", "reproduce", "dont"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Treat AI-todo as saturated slop. Prefer studying an existing app or a smaller learning experiment over greenfield."
+      }
+    },
+    {
+      "id": "generic-ai-wrapper",
+      "category": "generic_project_idea",
+      "profile": "profiles/beginner.md",
+      "question": "I want to create an AI chatbot wrapper around a public LLM API for my portfolio.",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "offer_quick_vs_deep",
+        "run_s4_now": false,
+        "preferred_actions": ["dont", "study", "earn"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Generic LLM wrappers are low-signal. Recommend against unless a scarce domain/data/distribution angle exists."
+      }
+    },
+    {
+      "id": "already-solved-weather",
+      "category": "already_solved",
+      "profile": "profiles/beginner.md",
+      "question": "Should I build a weather dashboard app from scratch?",
+      "mode": "deep",
+      "has_retrieval_facts": true,
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": false,
+        "next_action": "continue_from_gaps",
+        "run_s4_now": false,
+        "preferred_actions": ["study", "reproduce", "contribute", "dont"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "With prior-art present, do not rebuild weather apps. Study/reproduce/contribute to an existing one."
+      }
+    },
+    {
+      "id": "beginner-weather-rebuild",
+      "category": "beginner_user",
+      "profile": "profiles/beginner.md",
+      "question": "I am a beginner. Should I build another weather application to learn APIs?",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "offer_quick_vs_deep",
+        "run_s4_now": false,
+        "preferred_actions": ["study", "reproduce", "extend"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Learning value without originality theater: study an existing weather repo, reproduce its API pipeline, then modify one component."
+      }
+    },
+    {
+      "id": "advanced-gap-hunt",
+      "category": "advanced_user",
+      "profile": "profiles/advanced.md",
+      "question": "Should I build a new evaluation dashboard for LLM judges, or does something good already exist?",
+      "mode": "deep",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "run_existing_work_search",
+        "run_s4_now": true,
+        "preferred_actions": ["study", "contribute", "extend", "research", "build"],
+        "discouraged_actions": [],
+        "rational_stance": "Advanced user: run prior-art first. Build only the missing piece if a real gap remains; otherwise contribute/extend."
+      }
+    },
+    {
+      "id": "immediate-money-freelance",
+      "category": "immediate_money",
+      "profile": "profiles/immediate_money.md",
+      "question": "What should I work on this month? I was thinking of building an open-source analytics platform for my portfolio.",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "offer_quick_vs_deep",
+        "run_s4_now": false,
+        "income_urgency": "immediate",
+        "preferred_actions": ["earn", "network", "dont"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Rent urgency dominates. Prefer paid gigs/automation jobs; defer unpaid analytics platform. State how to protect later portfolio time."
+      }
+    },
+    {
+      "id": "immediate-money-no-build-claim",
+      "category": "immediate_money",
+      "profile": "profiles/immediate_money.md",
+      "question": "What is the most rational way to earn money in the next two weeks with my skills?",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": false,
+        "next_action": "continue_without_research",
+        "run_s4_now": false,
+        "income_urgency": "immediate",
+        "preferred_actions": ["earn", "network"],
+        "discouraged_actions": ["build", "research"],
+        "rational_stance": "No build claim and immediate urgency: recommend concrete earning actions, not a project for its own sake."
+      }
+    },
+    {
+      "id": "long-term-mle-trajectory",
+      "category": "long_term_career",
+      "profile": "profiles/long_term_career.md",
+      "question": "Which learning path should I prioritize between production MLOps evidence and another Kaggle model?",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": false,
+        "next_action": "continue_without_research",
+        "run_s4_now": false,
+        "preferred_actions": ["study", "reproduce", "extend", "research"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Prioritization among known options: favor MLOps/production evidence over another Kaggle run for stated trajectory. Not a greenfield product."
+      }
+    },
+    {
+      "id": "conflicting-prefs",
+      "category": "conflicting_preferences",
+      "profile": "profiles/conflicting.md",
+      "question": "Should I build an AI product-eng portfolio app in Haskell only, with no cloud vendors, to get that job soon?",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "offer_quick_vs_deep",
+        "run_s4_now": false,
+        "preferred_actions": ["dont", "study", "earn", "wait"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Make the conflict explicit: target role vs stack/cloud refusal vs income soon. Do not invent a magical Haskell-only FAANG project; recommend resolving constraints or changing objective."
+      }
+    },
+    {
+      "id": "sustainability-dashboard",
+      "category": "sustainability",
+      "profile": "profiles/sustainability.md",
+      "question": "Should I build a climate sustainability dashboard for my portfolio?",
+      "mode": "deep",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "run_existing_work_search",
+        "run_s4_now": true,
+        "preferred_actions": ["study", "research", "contribute", "dont"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Generic climate dashboards are saturated. Require domain/prior-art check; prefer studying datasets/orgs or a local gap over another dashboard."
+      }
+    },
+    {
+      "id": "research-paper-impl",
+      "category": "research",
+      "profile": "profiles/research.md",
+      "question": "I want to implement a paper as a full web product people can use. Is that the right next step?",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": false,
+        "research_justified": true,
+        "next_action": "offer_quick_vs_deep",
+        "run_s4_now": false,
+        "preferred_actions": ["research", "reproduce", "study", "wait"],
+        "discouraged_actions": ["build"],
+        "rational_stance": "Research trajectory: reproduce results and map literature before productizing. Full web product is premature."
+      }
+    },
+    {
+      "id": "insufficient-info",
+      "category": "insufficient_information",
+      "profile": "profiles/insufficient.md",
+      "question": "Tell me the best project to build next.",
+      "mode": "quick",
+      "expect": {
+        "needs_clarification": true,
+        "research_justified": false,
+        "next_action": "ask_clarifying_questions",
+        "run_s4_now": false,
+        "active_stages": ["profile_resolution", "s1_clarify"],
+        "preferred_actions": [],
+        "discouraged_actions": ["build", "study", "earn", "research"],
+        "rational_stance": "STOP. Ask clarifying questions only. Do not invent a project under missing objective/time/capabilities."
+      }
+    }
+  ]
+}

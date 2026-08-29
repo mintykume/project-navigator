@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decision-request.schema.json",
+  "title": "ProjectNavigatorDecisionRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["question", "mode", "profile"],
+  "properties": {
+    "question": { "type": "string", "minLength": 1 },
+    "mode": { "type": "string", "enum": ["quick", "deep"] },
+    "profile": {
+      "type": "object",
+      "description": "Same shape as user-profile.schema.json"
+    },
+    "prior_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  }
+}

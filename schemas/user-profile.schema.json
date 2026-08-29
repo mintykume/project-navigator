@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "user-profile.schema.json",
+  "title": "ProjectNavigatorUserProfile",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["primary_objective", "time_budget"],
+  "properties": {
+    "name": { "type": "string" },
+    "primary_objective": {
+      "type": "string",
+      "description": "What they are optimizing for right now"
+    },
+    "time_budget": {
+      "type": "string",
+      "description": "Available time window (e.g. weekend, 2 weeks, evenings)"
+    },
+    "income_urgency": {
+      "type": "string",
+      "enum": ["none", "soon", "immediate", "unknown"]
+    },
+    "trajectory": { "type": "string" },
+    "demonstrated_capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "claimed_capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "emerging_capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "missing_capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "preferences": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "working_style": { "type": "string" },
+        "research_vs_build": { "type": "string" },
+        "visual_vs_abstract": { "type": "string" },
+        "collaboration": { "type": "string" },
+        "preferred_stack": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "ethical_boundaries": { "type": "string" }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "location": { "type": "string" },
+        "financial": { "type": "string" },
+        "risk_tolerance": { "type": "string" },
+        "other": { "type": "string" }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Repos, papers, links that evidence capability",
+      "items": { "type": "string" }
+    }
+  },
+  "anyOf": [
+    { "required": ["demonstrated_capabilities"], "properties": { "demonstrated_capabilities": { "minItems": 1 } } },
+    { "required": ["claimed_capabilities"], "properties": { "claimed_capabilities": { "minItems": 1 } } },
+    { "required": ["emerging_capabilities"], "properties": { "emerging_capabilities": { "minItems": 1 } } }
+  ]
+}

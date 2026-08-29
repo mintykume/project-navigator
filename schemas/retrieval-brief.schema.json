@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "retrieval-brief.schema.json",
+  "title": "ProjectNavigatorRetrievalBrief",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["queries", "max_hits", "fact_fields"],
+  "properties": {
+    "queries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "query", "intent"],
+        "properties": {
+          "id": { "type": "string" },
+          "query": { "type": "string" },
+          "intent": {
+            "type": "string",
+            "enum": [
+              "github_repos",
+              "apps_products",
+              "papers",
+              "datasets",
+              "apis_standards",
+              "opportunities"
+            ]
+          }
+        }
+      }
+    },
+    "max_hits": { "type": "integer", "minimum": 1, "maximum": 30 },
+    "fact_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["title", "url", "snippet", "source_class", "query_id"]
+      }
+    },
+    "sources_allowed": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

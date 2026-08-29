@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "recommendation.schema.json",
+  "title": "ProjectNavigatorRecommendation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recommendation",
+    "why_you",
+    "why_now",
+    "existing_alternatives",
+    "gap",
+    "first_experiment",
+    "success_condition",
+    "capability_unlocked",
+    "downstream_paths",
+    "trade_off",
+    "alternative",
+    "confidence"
+  ],
+  "properties": {
+    "recommendation": {
+      "type": "object",
+      "required": ["action", "summary"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "build",
+            "study",
+            "reproduce",
+            "contribute",
+            "extend",
+            "research",
+            "earn",
+            "network",
+            "wait",
+            "dont"
+          ]
+        },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "why_you": { "type": "string", "minLength": 1 },
+    "why_now": { "type": "string", "minLength": 1 },
+    "existing_alternatives": { "type": "string", "minLength": 1 },
+    "gap": { "type": "string", "minLength": 1 },
+    "first_experiment": { "type": "string", "minLength": 1 },
+    "success_condition": { "type": "string", "minLength": 1 },
+    "capability_unlocked": { "type": "string", "minLength": 1 },
+    "downstream_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "trade_off": { "type": "string", "minLength": 1 },
+    "alternative": { "type": "string", "minLength": 1 },
+    "confidence": {
+      "type": "object",
+      "required": ["known", "inferred", "unknown"],
+      "properties": {
+        "known": { "type": "string" },
+        "inferred": { "type": "string" },
+        "unknown": { "type": "string" }
+      }
+    }
+  }
+}

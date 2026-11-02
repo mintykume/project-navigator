@@ -52,4 +52,4 @@ If you needed income immediately, offer a short freelance ETL cleanup for a loca
 
 - **Known:** profile skills, time budget, saturated framework space for beginners' “new ETL”.
 - **Inferred:** contribution path beats greenfield for trajectory signal.
-- **Unknown:** which upstream repo is healthiest this month without a fresh search.
+- **Unknown:** which upstream repo is healthiest this month; `retrieval_status=NOT_SEARCHED` (no fresh search was run).

@@ -83,6 +83,8 @@ class ScriptSmokeTests(unittest.TestCase):
                     str(SCRIPTS / "normalize_retrieval.py"),
                     "--in",
                     str(FIXTURES / "retrieval_hits.json"),
+                    "--question",
+                    "What prior art exists for ETL pipeline lineage data engineering?",
                     "--out",
                     str(facts),
                 ]
@@ -139,6 +141,52 @@ class ScriptSmokeTests(unittest.TestCase):
         self.assertEqual(data["status"], "awaiting_research_decision")
         self.assertTrue(data["workflow_plan"]["research_justified"])
         self.assertFalse(data["workflow_plan"]["run_s4_now"])
+
+    def test_explicit_deep_request_runs_search_from_cli(self):
+        r = run(
+            [
+                PY,
+                str(SCRIPTS / "run_preflight.py"),
+                "--profile",
+                str(FIXTURES / "profile_valid.md"),
+                "--question",
+                "Do a deep prior-art search for a climbing route planner.",
+                "--mode",
+                "quick",
+            ]
+        )
+        self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        data = json.loads(r.stdout)
+        self.assertEqual(data["mode"], "deep")
+        self.assertEqual(data["context_pack"]["parts"]["mode"], "deep")
+        self.assertTrue(data["workflow_plan"]["run_s4_now"])
+
+    def test_preflight_uses_profile_facts_from_question(self):
+        question = (
+            "I'm a beginner coder interested in rock climbing. "
+            "My objective is learning; I can spend 4 hours a week."
+        )
+        r = run(
+            [
+                PY,
+                str(SCRIPTS / "run_preflight.py"),
+                "--profile",
+                str(FIXTURES / "profile_incomplete.md"),
+                "--question",
+                question,
+            ]
+        )
+        self.assertEqual(r.returncode, 1, r.stderr + r.stdout)
+        data = json.loads(r.stdout)
+        self.assertEqual(
+            [item["field_id"] for item in data["missing"]],
+            ["demonstrated_capabilities"],
+        )
+        asked = {item["field"] for item in data["targeted_questions"]}
+        self.assertNotIn("coding_level", asked)
+        self.assertNotIn("interests", asked)
+        self.assertNotIn("primary_objective", asked)
+        self.assertEqual(data["resolved_profile"]["profile"]["time_budget"], "4 hours a week")
 
 
 if __name__ == "__main__":

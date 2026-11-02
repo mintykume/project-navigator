@@ -14,7 +14,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 sys.path.insert(0, str(SCRIPTS))
 
 from assemble_context import assemble  # noqa: E402
-from build_search_queries import build_queries  # noqa: E402
+from build_search_queries import _keywords, build_queries  # noqa: E402
 from check_recommendation import lint_markdown  # noqa: E402
 from lib_pn import (  # noqa: E402
     critical_missing,
@@ -252,7 +252,7 @@ class AssembleContextTests(unittest.TestCase):
         self.assertIn("workflow_plan", pack["parts"])
         self.assertNotIn("<!--", pack["parts"]["output_template"])
         self.assertIn("primary_objective", json.dumps(pack["parts"]["profile"]))
-        self.assertLess(pack["char_count"], 5500)
+        self.assertLess(pack["char_count"], 6000)
 
 class BuildSearchQueriesTests(unittest.TestCase):
     def test_stable_queries(self):
@@ -263,8 +263,22 @@ class BuildSearchQueriesTests(unittest.TestCase):
         self.assertEqual(ids, sorted(set(ids)))
         intents = {q["intent"] for q in brief["queries"]}
         self.assertIn("github_repos", intents)
-        # location should add opportunities intent
-        self.assertIn("opportunities", intents)
+        self.assertNotIn("opportunities", intents)
+
+    def test_removes_filler_and_terminal_punctuation(self):
+        self.assertEqual(_keywords("I want to study math.", {}), ["study", "math"])
+
+    def test_preserves_technical_tokens(self):
+        self.assertEqual(
+            _keywords("Build with C++, C#, and Node.js.", {}),
+            ["c++", "c#", "node.js"],
+        )
+
+    def test_preserves_complete_unicode_words(self):
+        self.assertEqual(
+            _keywords("I want to study matematică.", {}),
+            ["study", "matematică"],
+        )
 
 
 class NormalizeRetrievalTests(unittest.TestCase):

@@ -1,16 +1,12 @@
 ---
 name: project-navigator
-description: >-
-  Decision-support skill for deciding what to work on next, whether an idea is worth pursuing,
-  whether it already exists, and what the smallest useful next experiment should be. Use when
-  the user asks what to build, research, learn, contribute to, or pursue next, and when the
-  goal is to avoid AI-generated project slop.
+description: Decision-support skill for deciding what to work on next, whether an idea is worth pursuing, whether it already exists, and what the smallest useful next experiment should be. Use when the user asks what to build, research, learn, contribute to, or pursue next, and when the goal is to avoid AI-generated project slop.
 metadata:
-  version: "0.1.0"
+  version: "2.0.0"
   requires: "python3>=3.9 (optional scripts, stdlib only)"
 ---
 
-# Project Navigator
+# Project Navigator Skill 2.0
 
 Project Navigator is a decision-support skill for a host AI agent. It helps the agent determine:
 
@@ -67,13 +63,20 @@ Use the repo's deterministic scripts before or alongside the conversational reas
 python scripts/run_preflight.py --profile <file> --question "..." --mode quick|deep
 ```
 
+If preflight returns `awaiting_research_decision`, ask the user once and rerun the same command with `--research-decision quick` or `--research-decision deep`. The quick choice resumes without S4; the deep choice resumes with S4. `--mode deep` and explicit deep requests still run the deep path directly.
+
 Workflow status meanings:
 
 - `needs_clarification`: ask only the returned missing questions and stop.
-- `awaiting_research_decision`: ask whether the user wants a quick answer or deeper prior-art research first.
-- `ready` + `run_s4_now`: the host agent should do research, normalize results, and re-run preflight with `--retrieval`.
+- `awaiting_research_decision`: ask whether the user wants a quick answer or deeper prior-art research first, then rerun with `--research-decision quick|deep`.
+- `ready` + `run_s4_now`: the host agent should do research, normalize results (including an empty result), and re-run preflight with `--retrieval`.
+- `retrieval_status=SEARCHED_NO_RESULTS`: search returned zero hits; continue without repeating S4 and do not infer novelty.
+- `retrieval_status=SEARCHED_NO_USABLE_EVIDENCE`: hits were returned but none were valid and relevant; continue without repeating S4 and do not claim prior art was adequately checked.
+- `retrieval_status=NOT_SEARCHED`: no search was performed, including when deep research was deferred or declined.
+- `retrieval_status=SEARCHED_WITH_RESULTS`: at least one valid, relevant fact is available.
+- Use `workflow_plan.retrieval_status` as the sole prior-art state. Human "unchecked"/"not checked" maps to `NOT_SEARCHED` only; confidence `Unknown` means unresolved facts, not research state.
 - `ready`: continue in the stage flow S2-S7 and then S8 recommendation.
-- after S8: run `python scripts/check_recommendation.py --in <draft>`.
+- after S8: run `python scripts/check_recommendation.py --in <draft> --retrieval-status <workflow_plan.retrieval_status>`.
 
 The flow is:
 
@@ -123,7 +126,7 @@ Local checks:
 ```bash
 python -m unittest discover -s tests -v
 python scripts/validate_profile.py --profile examples/sample-profile.md
-python scripts/check_recommendation.py --in examples/sample-recommendation.md
+python scripts/check_recommendation.py --in examples/sample-recommendation.md --retrieval-status NOT_SEARCHED
 ```
 
 ## Entry files

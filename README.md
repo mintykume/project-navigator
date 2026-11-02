@@ -1,4 +1,6 @@
-# Project Navigator
+# Project Navigator Skill 2.0
+
+Version `2.0.0`, derived from Skill 1.x commit `9026097`. This isolated Skill 2.0 implementation includes workflow, retrieval, and validation improvements; the original v1 source remains unchanged.
 
 Project Navigator is a decision-support skill for a host AI agent.
 
@@ -30,6 +32,7 @@ Documentation:
 - `QUICKSTART.md`
 - `VISION.md`
 - `MERGE.md`
+- `RELEASE_NOTES.md`
 
 Examples + development:
 
@@ -66,7 +69,7 @@ A typical agent flow is:
 ```bash
 python -m unittest discover -s tests -v
 python scripts/validate_profile.py --profile examples/sample-profile.md
-python scripts/check_recommendation.py --in examples/sample-recommendation.md
+python scripts/check_recommendation.py --in examples/sample-recommendation.md --retrieval-status NOT_SEARCHED
 python scripts/run_preflight.py --profile examples/sample-profile.md --question "What should I work on this month?" --mode quick
 ```
 

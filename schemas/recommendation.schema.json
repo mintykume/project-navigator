@@ -61,7 +61,10 @@
       "properties": {
         "known": { "type": "string" },
         "inferred": { "type": "string" },
-        "unknown": { "type": "string" }
+        "unknown": {
+          "type": "string",
+          "description": "Material facts still unresolved; this is not the prior-art retrieval state."
+        }
       }
     }
   }

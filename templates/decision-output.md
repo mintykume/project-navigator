@@ -16,7 +16,7 @@
 
 ## Existing alternatives
 
-<!-- What already exists; or "not checked (quick mode)" -->
+<!-- What evidence says. If retrieval_status=NOT_SEARCHED, say "Not checked"; distinguish zero hits from no usable evidence. -->
 
 ## The gap
 
@@ -50,4 +50,4 @@
 
 - **Known:**
 - **Inferred:**
-- **Unknown:**
+- **Unknown:** <!-- Material facts not established; not a prior-art retrieval state -->

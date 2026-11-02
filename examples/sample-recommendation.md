@@ -55,4 +55,4 @@ If income were immediate: a small paid automation for a local org using your API
 
 - **Known:** user skills, time budget, goal class; market saturated for generic dashboards (general knowledge).
 - **Inferred:** reproduction will teach more than greenfield UI for this trajectory.
-- **Unknown:** specific best upstream repo for their locale (deep search not run in this sample).
+- **Unknown:** the best upstream repo for their locale was not assessed; `retrieval_status=NOT_SEARCHED` (no search was run in this sample).

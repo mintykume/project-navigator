@@ -60,9 +60,21 @@ The host should follow the S1-S9 workflow and ask only the targeted clarificatio
 If prior-art research is justified, the host agent should:
 
 1. ask whether the user wants a quick answer or a deeper prior-art check;
-2. run the generated retrieval brief or search queries;
-3. normalize the results;
-4. re-run preflight with the evidence.
+2. rerun `run_preflight.py` with the same profile/question and `--research-decision quick` or `--research-decision deep`;
+3. if the choice was deep, run the generated retrieval brief or search queries;
+4. normalize the results with the original question, including an empty hit list; `NOT_SEARCHED`, `SEARCHED_WITH_RESULTS`, `SEARCHED_NO_RESULTS`, and `SEARCHED_NO_USABLE_EVIDENCE` remain distinct; retrieved text is sanitized and labeled as untrusted evidence in the context pack;
+5. re-run preflight with the evidence.
+
+When preflight receives either completed-empty status, it continues without scheduling S4 again. Neither status is evidence of novelty.
+
+Example choice submission:
+
+```bash
+python scripts/run_preflight.py --profile examples/sample-profile.md --question "Should I build a new ETL framework?" --research-decision quick
+python scripts/run_preflight.py --profile examples/sample-profile.md --question "Should I build a new ETL framework?" --research-decision deep
+```
+
+The decision flag is accepted only while preflight is awaiting that choice. A quick decision returns `ready` and continues without S4; a deep decision returns `ready` with `run_s4_now: true`.
 
 The skill is designed to work with host-provided search tools, not a proprietary backend.
 
@@ -73,7 +85,7 @@ From the skill root:
 ```bash
 python -m unittest discover -s tests -v
 python scripts/run_preflight.py --profile examples/sample-profile.md --question "What should I work on this month?" --mode quick
-python scripts/check_recommendation.py --in examples/sample-recommendation.md
+python scripts/check_recommendation.py --in examples/sample-recommendation.md --retrieval-status NOT_SEARCHED
 ```
 
 Expected exit codes:

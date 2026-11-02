@@ -7,13 +7,24 @@ import argparse
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 _SCRIPTS = Path(__file__).resolve().parent
 if str(_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS))
 
-from lib_pn import compact_profile, load_profile, write_text
+from lib_pn import compact_profile, has_local_search_need, load_profile, write_text
+
+_OPPORTUNITY_SEARCH_TERMS = re.compile(
+    r"\b(?:opportunit(?:y|ies)|jobs?|internships?|scholarships?|fellowships?|"
+    r"grants?|hackathons?|meetups?|events?|accelerators?|labs?|civic[- ]tech|"
+    r"volunteer(?:ing)?|communities|community|resources?|makerspaces?|"
+    r"coworking|contribut(?:e|ion|ions)|organizations?)\b",
+    re.I,
+)
+_KEYWORD_PATTERN = re.compile(r"[^\W\d_][\w+#.-]*", re.UNICODE)
+_TRAILING_KEYWORD_PUNCTUATION = ".,;:!?-"
 
 
 def _keywords(question: str, profile: dict) -> list[str]:
@@ -39,9 +50,16 @@ def _keywords(question: str, profile: dict) -> list[str]:
         "build",
         "work",
         "on",
+        "want",
+        "wants",
+        "wanted",
     }
-    words = re.findall(r"[A-Za-z][A-Za-z0-9+.#-]{1,}", question.lower())
-    keys = [w for w in words if w not in stop]
+    normalized_question = unicodedata.normalize("NFC", question).casefold()
+    words = [
+        word.rstrip(_TRAILING_KEYWORD_PUNCTUATION)
+        for word in _KEYWORD_PATTERN.findall(normalized_question)
+    ]
+    keys = [word for word in words if len(word) > 1 and word not in stop]
     # Add a few capability tokens
     for field in (
         "demonstrated_capabilities",
@@ -50,7 +68,12 @@ def _keywords(question: str, profile: dict) -> list[str]:
     ):
         for item in profile.get(field) or []:
             if isinstance(item, str):
-                token = item.strip().split()[0].lower()
+                parts = item.strip().split()
+                token = (
+                    parts[0].casefold().rstrip(_TRAILING_KEYWORD_PUNCTUATION)
+                    if parts
+                    else ""
+                )
                 if token and token not in keys and token not in stop:
                     keys.append(token)
             if len(keys) >= 8:
@@ -65,13 +88,34 @@ def _keywords(question: str, profile: dict) -> list[str]:
     return out[:8] or ["open source project"]
 
 
+def build_opportunity_context(question: str, profile: dict) -> dict:
+    """Expose location and whether geography is relevant to opportunity discovery."""
+    compacted = compact_profile(profile)
+    constraints = compacted.get("constraints")
+    location = constraints.get("location") if isinstance(constraints, dict) else None
+    if not isinstance(location, str) or not location:
+        location_parts = [
+            compacted.get(field)
+            for field in ("city", "country")
+            if isinstance(compacted.get(field), str) and compacted[field]
+        ]
+        location = ", ".join(location_parts) if location_parts else None
+
+    context = {
+        "local_opportunity_search_requested": (
+            has_local_search_need(question)
+            and bool(_OPPORTUNITY_SEARCH_TERMS.search(question))
+        )
+    }
+    if location:
+        context["location"] = location
+    return context
+
+
 def build_queries(question: str, profile: dict, max_queries: int = 6) -> dict:
     keys = _keywords(question, compact_profile(profile))
     topic = " ".join(keys[:4])
-    loc = ""
-    constraints = profile.get("constraints") or {}
-    if isinstance(constraints, dict):
-        loc = (constraints.get("location") or "").strip()
+    opportunity_context = build_opportunity_context(question, profile)
 
     intents = [
         ("github_repos", f"{topic} github"),
@@ -80,9 +124,10 @@ def build_queries(question: str, profile: dict, max_queries: int = 6) -> dict:
         ("datasets", f"{topic} dataset"),
         ("apis_standards", f"{topic} API OR standard OR specification"),
     ]
-    if loc:
+    location = opportunity_context.get("location")
+    if opportunity_context["local_opportunity_search_requested"] and location:
         intents.append(
-            ("opportunities", f"{topic} {loc} hackathon OR lab OR community")
+            ("opportunities", f"{topic} {location} hackathon OR lab OR community")
         )
 
     queries = []
@@ -94,6 +139,7 @@ def build_queries(question: str, profile: dict, max_queries: int = 6) -> dict:
         "max_hits": 12,
         "fact_fields": ["title", "url", "snippet", "source_class", "query_id"],
         "sources_allowed": ["web", "github", "host_tools"],
+        "opportunity_context": opportunity_context,
     }
 
 

@@ -68,12 +68,46 @@ def run_cmd(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
 
 
+def validate_case_profiles(cases: list[dict]) -> list[str]:
+    errors = []
+    for case in cases:
+        profile_path = ROOT / case["profile"]
+        validation = run_cmd([
+            sys.executable,
+            "scripts/validate_profile.py",
+            "--profile",
+            str(profile_path),
+        ])
+        if validation.returncode != 0:
+            details = "\n".join(
+                item.strip()
+                for item in (validation.stdout, validation.stderr)
+                if item.strip()
+            )
+            errors.append(
+                f"{case['id']} ({case['profile']}): "
+                f"{details or f'validator exited with {validation.returncode}'}"
+            )
+    return errors
+
+
 def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
 def main() -> int:
+    profile_errors = validate_case_profiles(CASES)
+    if profile_errors:
+        print(
+            "ERROR: Evaluation profiles failed validation; no scenarios were run:\n"
+            + "\n".join(f"- {error}" for error in profile_errors),
+            file=sys.stderr,
+        )
+        return 1
+
     results = []
+    raw_facts_path = ROOT / "tests" / "fixtures" / "retrieval_hits.json"
+
     for case in CASES:
         profile_path = ROOT / case["profile"]
         question = case["question"]
@@ -82,6 +116,20 @@ def main() -> int:
         deep_out = OUT_DIR / f"{id_}_deep.json"
         queries_out = OUT_DIR / f"{id_}_queries.json"
         context_out = OUT_DIR / f"{id_}_context.json"
+        facts_path = OUT_DIR / f"{id_}_normalized-retrieval.json"
+        normalization = run_cmd([
+            sys.executable,
+            "scripts/normalize_retrieval.py",
+            "--in",
+            str(raw_facts_path),
+            "--question",
+            question,
+            "--out",
+            str(facts_path),
+        ])
+        if normalization.returncode != 0:
+            print(normalization.stderr or normalization.stdout, file=sys.stderr)
+            return normalization.returncode or 1
 
         quick = run_cmd([
             sys.executable,
@@ -118,7 +166,6 @@ def main() -> int:
             str(context_out),
         ])
 
-        facts_path = ROOT / "tests" / "fixtures" / "retrieval_hits.json"
         deep = run_cmd([
             sys.executable,
             "scripts/run_preflight.py",
@@ -147,6 +194,16 @@ def main() -> int:
             "quick_returncode": quick.returncode,
             "quick_status": quick_payload.get("status") if quick_payload else None,
             "deep_status": deep_payload.get("status") if deep_payload else None,
+            "deep_retrieval_status": (
+                deep_payload.get("workflow_plan", {}).get("retrieval_status")
+                if deep_payload
+                else None
+            ),
+            "deep_run_s4_now": (
+                deep_payload.get("workflow_plan", {}).get("run_s4_now")
+                if deep_payload
+                else None
+            ),
             "query_count": len(queries_payload.get("queries", [])) if queries_payload else 0,
             "generated_queries": queries_payload.get("queries", []) if queries_payload else [],
             "context_pack_chars": context_payload.get("char_count") if context_payload else None,

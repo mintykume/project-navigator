@@ -1,6 +1,8 @@
 # User profile
 
 Fill what you know. Leave unknown sections blank. Validated by `schemas/user-profile.schema.json` via `scripts/validate_profile.py`.
+Profile field headings can use any Markdown heading level and may end with a colon; field names must still match a recognized profile field.
+For free-text and list fields, exact values `TBD`, `N/A`, `?`, `unknown`, and `-` count as missing (case-insensitive; surrounding whitespace is ignored). The schema-defined `income_urgency: unknown` value remains valid.
 
 ## primary_objective
 

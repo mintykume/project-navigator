@@ -12,6 +12,8 @@ Resolve the user's working profile from any host-provided context without fabric
 ## Rules
 
 - Prefer explicit, newer information over older or inferred information.
+- Before asking questions, extract explicit profile facts from the current request and merge them as recent conversation data.
+- Reuse facts stated in the request (such as coding level, interests, objective, or time budget); do not infer facts from vague wording.
 - Mark inferred facts with lower confidence.
 - Do not ask for a full profile questionnaire unless the missing information materially affects the decision.
 - Keep personal data in runtime memory only; do not write it into repo fixtures or public artifacts.

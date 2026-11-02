@@ -15,6 +15,7 @@ if str(_SCRIPTS) not in sys.path:
 from assemble_context import assemble
 from build_search_queries import build_queries
 from lib_pn import (
+    NOT_SEARCHED,
     critical_missing,
     load_profile,
     plan_workflow,
@@ -24,6 +25,7 @@ from lib_pn import (
     validate_profile,
     write_text,
 )
+from normalize_retrieval import prepare_retrieval
 
 
 def main() -> int:
@@ -31,6 +33,11 @@ def main() -> int:
     parser.add_argument("--profile", required=True, type=Path)
     parser.add_argument("--question", required=True)
     parser.add_argument("--mode", choices=["quick", "deep"], default="quick")
+    parser.add_argument(
+        "--research-decision",
+        choices=["quick", "deep"],
+        help="Resolve an awaiting_research_decision state",
+    )
     parser.add_argument("--context", type=Path, help="Optional JSON file with host memory/current context")
     parser.add_argument("--retrieval", type=Path, help="Normalized facts JSON")
     parser.add_argument("--out", type=Path, help="Write JSON result")
@@ -61,23 +68,66 @@ def main() -> int:
             print(f"ERROR: failed to load context: {exc}", file=sys.stderr)
             return 2
 
-    resolved = resolve_profile(profile=profile, context=context)
+    resolved = resolve_profile(
+        profile=profile,
+        context=context,
+        current_question=args.question,
+    )
     profile = resolved["profile"]
     errors = validate_profile(profile)
     missing = critical_missing(profile)
 
     facts: list = []
+    retrieval_status = NOT_SEARCHED
     if args.retrieval:
-        data = json.loads(args.retrieval.read_text(encoding="utf-8"))
-        facts = data if isinstance(data, list) else data.get("facts", [])
+        try:
+            data = json.loads(args.retrieval.read_text(encoding="utf-8"))
+        except (OSError, ValueError, UnicodeError) as exc:
+            print(f"ERROR: failed to load retrieval data: {exc}", file=sys.stderr)
+            return 2
+        if isinstance(data, list):
+            facts = data
+            declared_status = None
+        elif isinstance(data, dict):
+            if "facts" not in data and "retrieval_status" not in data:
+                print(
+                    "ERROR: normalized retrieval object must contain facts or retrieval_status",
+                    file=sys.stderr,
+                )
+                return 2
+            facts = data.get("facts", [])
+            declared_status = data.get("retrieval_status")
+        else:
+            print(
+                "ERROR: retrieval data must be a JSON list or object",
+                file=sys.stderr,
+            )
+            return 2
+        if not isinstance(facts, list):
+            print("ERROR: retrieval facts must be a JSON list", file=sys.stderr)
+            return 2
+        try:
+            facts, retrieval_status = prepare_retrieval(
+                facts,
+                question=args.question,
+                retrieval_status=declared_status,
+            )
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
 
-    plan = plan_workflow(
-        question=args.question,
-        profile=profile,
-        mode=args.mode,
-        has_retrieval_facts=bool(facts),
-        allow_incomplete=args.allow_incomplete,
-    )
+    try:
+        plan = plan_workflow(
+            question=args.question,
+            profile=profile,
+            mode=args.mode,
+            research_decision=args.research_decision,
+            retrieval_status=retrieval_status,
+            allow_incomplete=args.allow_incomplete,
+        )
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
 
     if plan["needs_clarification"]:
         bank = read_question_bank()
@@ -98,7 +148,7 @@ def main() -> int:
 
     result: dict = {
         "status": "ready",
-        "mode": args.mode,
+        "mode": plan["mode"],
         "workflow_plan": plan,
     }
 
@@ -112,7 +162,8 @@ def main() -> int:
     if plan["run_s4_now"]:
         result["retrieval_brief"] = build_queries(args.question, profile)
         result["retrieval_note"] = (
-            "S4: host-search retrieval_brief.queries, normalize_retrieval.py, "
+            "S4: host-search retrieval_brief.queries, normalize_retrieval.py "
+            "--question \"<original user question>\", "
             "re-run with --retrieval."
         )
 
@@ -120,9 +171,10 @@ def main() -> int:
     if include_pack:
         result["context_pack"] = assemble(
             question=args.question,
-            mode=args.mode,
+            mode=plan["mode"],
             profile=profile,
             retrieval_facts=facts,
+            retrieval_status=retrieval_status,
             workflow_plan=plan,
             max_chars=args.max_chars,
         )

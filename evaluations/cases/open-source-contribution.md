@@ -10,7 +10,7 @@ Evenings, 4 hours/week for 8 weeks.
 
 ## income_urgency
 
-low urgency
+none
 
 ## trajectory
 

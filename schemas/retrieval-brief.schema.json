@@ -41,6 +41,15 @@
     "sources_allowed": {
       "type": "array",
       "items": { "type": "string" }
+    },
+    "opportunity_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_opportunity_search_requested"],
+      "properties": {
+        "local_opportunity_search_requested": { "type": "boolean" },
+        "location": { "type": "string" }
+      }
     }
   }
 }

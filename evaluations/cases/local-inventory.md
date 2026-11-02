@@ -10,7 +10,7 @@ Weekends, 5 hours/week for 3 weeks.
 
 ## income_urgency
 
-low urgency
+none
 
 ## trajectory
 
